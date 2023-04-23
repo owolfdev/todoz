@@ -1,38 +1,35 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## create
 
-## Getting Started
+method: POST
 
-First, run the development server:
+endpoint:
+http://localhost:3001/api/createTodo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+{
+"title": "New Todo",
+"description": "Something New.",
+"due_date": "2023-05-01",
+"images": ["https://images.unsplash.com/photo-1591871937573-74dbba515c4c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2370&q=80"]
+}
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## delete
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+method: DELETE
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+endpoint:
+http://localhost:3001/api/deleteTodo?id=d723e376-f636-4e55-a442-7f2952213971
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## update
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+method: PUT
 
-## Learn More
+endpoint:
+http://localhost:3001/api/updateTodo
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+{
+"id": "45061ad9-e205-430e-9606-46eb74c573ce",
+"title": "Kittens a-go-go",
+"description": "I love kittens",
+"due_date": "2023-05-01",
+"images": ["https://images.unsplash.com/photo-1591871937573-74dbba515c4c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2370&q=80"]
+}
