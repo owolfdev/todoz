@@ -45,56 +45,18 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [descriptionLength, setDescriptionLength] = useState(0);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const { data } = await axios.get("/api/todos");
-      setRowData(data);
-      console.log("Data:", data);
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
-
   useEffect(() => {
+    async function fetchData() {
+      try {
+        const { data } = await axios.get("/api/todosCompleted");
+        setRowData(data);
+        console.log("Data:", data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
     fetchData();
-  }, [fetchData]);
-
-  //realtime updates
-  //https://supabase.com/docs/guides/realtime/realtime-with-nextjs
-
-  // useEffect(() => {
-  //   const todoListener = supabase
-  //     .from("todos_for_todo_demo")
-  //     .on("*", (payload:any) => {
-  //       const newTodo = payload.new;
-  //       setRowData((oldTodos) => {
-  //         const newTodos = [...oldTodos, newTodo];
-  //         newTodos.sort((a, b) => b.id - a.id);
-  //         return newTodos;
-  //       });
-  //     })
-  //     .subscribe();
-
-  //   return () => {
-  //     todoListener.unsubscribe();
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   const taskListener = supabase
-  //     .channel("public:data")
-  //     .on(
-  //       "postgres_changes",
-  //       { event: "INSERT", schema: "public", table: "data" },
-  //       (payload) => {
-  //         console.log("Change received!", payload);
-  //       }
-  //     )
-  //     .subscribe();
-
-  //   // add return right here!
-  //   return taskListener.unsubscribe();
-  // }, []);
+  }, []);
 
   useEffect(() => {
     checkIsMobile(); // Call the function initially to set the correct value for isMobile
@@ -281,33 +243,25 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
       </div>
     );
   };
-
-  const getBackgroundColor = (dueDate: string, completed: boolean): string => {
+  const getBackgroundColor = (dueDate: string): string => {
     const now = new Date();
     const due = new Date(dueDate);
     const timeDiff = due.getTime() - now.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    if (completed) {
-      return "lightgray";
-    }
-
     if (daysDiff < 0) {
-      return "deeppink";
+      return "lightgray";
     } else if (daysDiff <= 7) {
-      return "orange";
+      return "lightgray";
     } else if (daysDiff <= 14) {
-      return "yellow";
+      return "lightgray";
     } else {
-      return "lightgreen";
+      return "lightgray";
     }
   };
 
   const getRowStyle = (params: any) => {
-    const backgroundColor = getBackgroundColor(
-      params.data.due_date,
-      params.data.completed
-    );
+    const backgroundColor = getBackgroundColor(params.data.due_date);
     return { background: backgroundColor };
   };
 

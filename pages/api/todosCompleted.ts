@@ -1,4 +1,3 @@
-// pages/api/todos.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import supabase from "../../lib/supabaseClient";
 
@@ -10,7 +9,7 @@ export default async function handler(
     const { data, error } = await supabase
       .from("todos_for_todo_demo")
       .select("*")
-      .eq("completed", false)
+      .eq("completed", true)
       .order("created_at", { ascending: false });
 
     if (error) {
