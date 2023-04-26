@@ -4,7 +4,7 @@ import AddTodo from "../components/AddTodo";
 const AddTodoPage = () => {
   return (
     <div>
-      <h2 className="mb-4 text-xl font-bold">Add a new Todo</h2>
+      <h2 className="mb-4 text-2xl font-bold">Add a new Todo</h2>
       <AddTodo />
     </div>
   );

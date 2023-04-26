@@ -1,28 +1,21 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 import supabase from "../../lib/supabaseClient";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "DELETE") {
-    const { id } = req.query;
-
-    console.log("id from delete todo!!!!!!", id);
-
-    if (!id) {
-      return res.status(400).json({ error: "ID is required" });
-    }
-
+  if (req.method === "GET") {
     const { data, error } = await supabase
       .from("todos_for_todo_demo")
-      .delete()
-      .eq("id", id);
+      .select("*")
+      .eq("approved", true)
+      .order("created_at", { ascending: false });
 
     if (error) {
       res.status(400).json({ error });
     } else {
-      res.status(200).json(data && data[0]);
+      res.status(200).json(data);
     }
   } else {
     res.status(405).json({ message: "Method not allowed" });

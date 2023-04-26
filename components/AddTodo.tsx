@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 //import { useSession } from "@supabase/auth";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { useSession } from "@supabase/auth-helpers-react";
 
 interface Todo {
   completed: boolean;
@@ -12,6 +13,8 @@ interface Todo {
   images: string[];
   title: string;
   assigned_to: string;
+  author: string;
+  user_id: string;
 }
 
 const AddTodo: React.FC = () => {
@@ -20,8 +23,18 @@ const AddTodo: React.FC = () => {
   const [dueDate, setDueDate] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [assignedTo, setAssignedTo] = useState("");
+  const [author, setAuthor] = useState("");
   //const [session] = useSession();
   const router = useRouter();
+  const session = useSession();
+
+  useEffect(() => {
+    if (!session) {
+      router.push("/signin");
+    } else {
+      console.log("session", session);
+    }
+  }, [session]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -61,6 +74,8 @@ const AddTodo: React.FC = () => {
         due_date: dueDate,
         images,
         assigned_to: assignedTo,
+        author: session?.user?.email,
+        user_id: session?.user?.id,
       });
       console.log("Todo created", data);
       setTitle("");

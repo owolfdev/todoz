@@ -63,7 +63,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
 
   const fetchData = useCallback(async () => {
     try {
-      const { data } = await axios.get("/api/todosCompleted");
+      const { data } = await axios.get("/api/todosApproved");
       setRowData(data);
       console.log("Data:", data);
     } catch (error) {
@@ -79,7 +79,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
     console.log("subscribing to realtime changes");
     //const [todos, setTodos] = useState<data[]>(rowData);
     const channel = supabase
-      .channel("realtime todos completed")
+      .channel("realtime todos approved")
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "todos_for_todo_demo" },
@@ -266,7 +266,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
                 Completed:
               </button>{" "}
             </span> */}
-            {completed ? (
+            {/* {completed ? (
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to set un-complete"
@@ -282,7 +282,12 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
               >
                 Todo
               </button>
-            )}
+            )} */}
+            <div>
+              <span className="px-2 py-1 font-bold bg-green-200 border rounded">
+                Approved
+              </span>
+            </div>
           </div>
         </div>
         <div className="w-full mt-4 text-sm whitespace-pre-wrap">

@@ -316,7 +316,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
               <button
                 onClick={(e) => handleComplete(e, id, completed, acknowledged)}
                 title="click to set un-complete"
-                className="px-2 font-bold bg-gray-200 border border-gray-500 rounded hover:text-gray-500"
+                className="px-2 font-bold bg-blue-200 border border-gray-500 rounded hover:text-gray-500"
               >
                 Complete
               </button>

@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState, ChangeEvent } from "react";
+import { useSession } from "@supabase/auth-helpers-react";
 
 type Todo = {
   id: string;
@@ -11,6 +12,8 @@ type Todo = {
   completed: boolean;
   assigned_to: string;
   notes: string | null;
+  approved: boolean;
+  author: string;
 };
 
 const TodoPage: React.FC = () => {
@@ -21,6 +24,9 @@ const TodoPage: React.FC = () => {
     null
   );
   const [notes, setNotes] = useState<string | null>(null);
+  const [approved, setApproved] = useState<boolean | null>(false);
+  const [completed, setCompleted] = useState<boolean | null>(false);
+  const session = useSession();
 
   useEffect(() => {
     async function fetchTodo() {
@@ -35,6 +41,13 @@ const TodoPage: React.FC = () => {
       fetchTodo();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (todo) {
+      setApproved(todo.approved);
+      setCompleted(todo.completed);
+    }
+  }, [todo]);
 
   const updateNotes = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const newNotes = event.target.value;
@@ -107,6 +120,50 @@ const TodoPage: React.FC = () => {
     }
   };
 
+  const updateApprovedStatus = async (approved: boolean) => {
+    if (todo && typeof id === "string") {
+      const response = await fetch("/api/updateTodo", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...todo, id, approved }),
+      });
+
+      if (response.ok) {
+        setTodo({ ...todo, approved });
+      }
+    }
+  };
+
+  const updateCompletedStatus = async (completed: boolean) => {
+    if (todo && typeof id === "string") {
+      const response = await fetch("/api/updateTodo", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...todo, id, completed }),
+      });
+
+      if (response.ok) {
+        setTodo({ ...todo, completed });
+      }
+    }
+  };
+
+  const handleApproved = async () => {
+    if (todo) {
+      updateApprovedStatus(!todo.approved);
+    }
+  };
+
+  const handleCompleted = async () => {
+    if (todo) {
+      updateCompletedStatus(!todo.completed);
+    }
+  };
+
   return (
     <div>
       {todo && (
@@ -119,55 +176,106 @@ const TodoPage: React.FC = () => {
         >
           <div className="mb-4">
             <h2 className="text-3xl font-bold">{todo.title}</h2>
-            <button
-              className="px-2 bg-gray-200 border border-gray-300 rounded hover:text-gray-600"
-              onClick={() => router.push(`/edit/${id}`)}
-            >
-              Edit
-            </button>
+            <div className="flex space-x-2">
+              {session?.user?.email === todo.author && (
+                <button
+                  className="px-2 bg-gray-200 border border-gray-300 rounded hover:text-gray-600"
+                  onClick={() => router.push(`/edit/${id}`)}
+                >
+                  Edit
+                </button>
+              )}
+
+              <button
+                className="px-2 text-white bg-green-500 rounded hover:bg-green-600"
+                onClick={() => router.push(`/`)}
+              >
+                Done
+              </button>
+            </div>
           </div>
-          <p>
-            <strong>Assigned to:</strong> {todo.assigned_to}
-          </p>
-          <p>
-            <strong>Created:</strong>{" "}
-            {new Date(todo.created_at).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Due date:</strong>{" "}
-            {new Date(todo.due_date).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Status:</strong>{" "}
-            <span
-              className="px-1 rounded"
-              style={{
-                backgroundColor: getBackgroundColor(
-                  todo.due_date,
-                  todo.completed
-                ),
-              }}
-            >
-              {getStatus(todo.due_date, todo.completed)}
-            </span>
-          </p>
-          <p>
-            <strong>Completed:</strong>{" "}
-            {todo.completed ? (
-              <button className="px-2 bg-gray-200 border border-gray-300 rounded hover:text-gray-600">
-                Yes
-              </button>
-            ) : (
-              <button className="px-2 bg-gray-200 border border-gray-300 rounded hover:text-gray-600">
-                No
-              </button>
-            )}
-          </p>
+          <div className="flex flex-col mb-4 space-y-1">
+            <div>
+              <strong>Assigned to:</strong> {todo.assigned_to}
+            </div>
+            <div>
+              <strong>
+                <span className="text-xl">Due date:</span>
+              </strong>{" "}
+              <span className="text-xl">
+                {new Date(todo.due_date).toLocaleDateString()}
+              </span>
+            </div>
+            <div>
+              <strong>Author:</strong> {todo.author}
+            </div>
+            <div>
+              <strong>Created:</strong>{" "}
+              {new Date(todo.created_at).toLocaleDateString()}
+            </div>
+            <div>
+              <strong>Status:</strong>{" "}
+              <span
+                className="px-2 py-1 rounded"
+                style={{
+                  backgroundColor: getBackgroundColor(
+                    todo.due_date,
+                    todo.completed
+                  ),
+                }}
+              >
+                {getStatus(todo.due_date, todo.completed)}
+              </span>
+            </div>
+            <div>
+              <strong>Completed:</strong>{" "}
+              {todo.completed ? (
+                <button
+                  onClick={handleCompleted}
+                  className="px-2 bg-blue-200 border border-gray-300 rounded hover:text-gray-600"
+                >
+                  Yes
+                </button>
+              ) : (
+                <button
+                  onClick={handleCompleted}
+                  className="px-2 bg-gray-200 border border-gray-300 rounded hover:text-gray-600"
+                >
+                  No
+                </button>
+              )}
+            </div>
+            <div>
+              <strong>Approved:</strong>
+              {todo.approved ? (
+                <button
+                  onClick={handleApproved}
+                  className="px-2 bg-green-200 border border-gray-300 rounded hover:text-gray-600"
+                >
+                  Yes
+                </button>
+              ) : (
+                <button
+                  onClick={handleApproved}
+                  className="px-2 bg-gray-200 border border-gray-300 rounded disabled:text-gray-400 hover:text-gray-600"
+                  disabled={
+                    session ? session?.user?.email !== todo.author : true
+                  }
+                >
+                  No
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="mt-4">
             {" "}
-            <p>
-              <strong>Description:</strong> {todo.description}
-            </p>
+            <div>
+              <strong>
+                <span className="text-xl">Description:</span>
+              </strong>{" "}
+              <div>{todo.description}</div>
+            </div>
           </div>
           <div className="flex flex-col mt-4">
             <label htmlFor="notes">

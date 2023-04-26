@@ -17,6 +17,7 @@ export default async function handler(
       assigned_to,
       notes,
       acknowledged, // Add this line
+      approved,
     } = req.body;
 
     if (!id) {
@@ -34,6 +35,7 @@ export default async function handler(
         assigned_to,
         notes,
         acknowledged, // Add this line
+        approved,
       })
       .eq("id", id);
 

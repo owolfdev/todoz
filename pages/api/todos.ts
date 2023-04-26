@@ -10,7 +10,7 @@ export default async function handler(
     const { data, error } = await supabase
       .from("todos_for_todo_demo")
       .select("*")
-      .eq("completed", false)
+      .eq("approved", false)
       .order("created_at", { ascending: false });
 
     if (error) {
