@@ -8,11 +8,7 @@ import Link from "next/link";
 const Home: React.FC = () => {
   return (
     <div>
-      <div className="mb-4">
-        <Link href="/add-todo">Add Todo</Link>
-      </div>
       <div>
-        <h1 className="mb-4 text-4xl font-bold">Todos</h1>
         <AGGrid path="/" />
       </div>
       <div className="mt-5">

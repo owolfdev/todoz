@@ -18,6 +18,9 @@ import supabase from "../lib/supabaseClient";
 import axios from "axios";
 import { log } from "console";
 import { formatDate } from "../lib/dateUtils";
+import { FaRegHandPointRight } from "react-icons/fa";
+import { AiOutlineCheckCircle } from "react-icons/ai";
+import { FaHandPaper } from "react-icons/fa";
 
 type data = {
   completed: boolean;
@@ -28,6 +31,7 @@ type data = {
   images: string[];
   title: string;
   assigned_to: string;
+  acknowledged: boolean;
 };
 
 interface AGGridProps {
@@ -46,6 +50,8 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   const [descriptionLength, setDescriptionLength] = useState(0);
 
   const fetchData = useCallback(async () => {
+    console.log("fetching data!!!!");
+
     try {
       const { data } = await axios.get("/api/todos");
       setRowData(data);
@@ -62,39 +68,25 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   //realtime updates
   //https://supabase.com/docs/guides/realtime/realtime-with-nextjs
 
-  // useEffect(() => {
-  //   const todoListener = supabase
-  //     .from("todos_for_todo_demo")
-  //     .on("*", (payload:any) => {
-  //       const newTodo = payload.new;
-  //       setRowData((oldTodos) => {
-  //         const newTodos = [...oldTodos, newTodo];
-  //         newTodos.sort((a, b) => b.id - a.id);
-  //         return newTodos;
-  //       });
-  //     })
-  //     .subscribe();
+  useEffect(() => {
+    console.log("subscribing to realtime changes");
+    //const [todos, setTodos] = useState<data[]>(rowData);
+    const channel = supabase
+      .channel("realtime todos update completed")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "todos_for_todo_demo" },
+        (payload: any) => {
+          console.log("Change received!", payload);
+          fetchData();
+        }
+      )
+      .subscribe();
 
-  //   return () => {
-  //     todoListener.unsubscribe();
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   const taskListener = supabase
-  //     .channel("public:data")
-  //     .on(
-  //       "postgres_changes",
-  //       { event: "INSERT", schema: "public", table: "data" },
-  //       (payload) => {
-  //         console.log("Change received!", payload);
-  //       }
-  //     )
-  //     .subscribe();
-
-  //   // add return right here!
-  //   return taskListener.unsubscribe();
-  // }, []);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   useEffect(() => {
     checkIsMobile(); // Call the function initially to set the correct value for isMobile
@@ -135,6 +127,44 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
       };
     }
   }, []);
+
+  const handleAcknowledged = async (e: any, id: string) => {
+    e.preventDefault();
+    console.log("acknowledged clicked");
+    console.log("id", id);
+
+    // Find the current acknowledged state of the todo item
+    const currentTodo = rowData.find((row) => row.id === id);
+    const newAcknowledgedState = !currentTodo?.acknowledged;
+
+    // Make a PUT request to your updateTodo API
+    try {
+      const response = await axios.put("/api/updateTodo", {
+        id,
+        acknowledged: newAcknowledgedState,
+      });
+
+      if (response.status === 200) {
+        console.log("Successfully updated acknowledged state");
+
+        // Update rowData with the modified data
+        const updatedRowData = rowData.map((row) => {
+          if (row.id === id) {
+            return { ...row, acknowledged: newAcknowledgedState };
+          }
+          return row;
+        });
+
+        //setRowData(updatedRowData);
+      } else {
+        console.error("Failed to update acknowledged state");
+      }
+    } catch (error) {
+      console.error("Error updating acknowledged state:", error);
+    } finally {
+      fetchData();
+    }
+  };
 
   const checkIsMobile = () => {
     if (typeof window !== "undefined") {
@@ -192,38 +222,57 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
     return 130;
   }, []);
 
-  const handleComplete = async (e: any, id: string, completed: boolean) => {
+  const handleComplete = async (
+    e: any,
+    id: string,
+    completed: boolean,
+    acknowledged: boolean
+  ) => {
     e.preventDefault();
     console.log("complete clicked");
 
-    console.log("id", id);
-
-    console.log("completed", completed);
-
-    const { data, error } = await supabase
-      .from("todos_for_todo_demo")
-      .update({ completed: !completed })
-      .eq("id", id);
-    if (error) {
-      console.log("error", error);
+    if (acknowledged === false) {
+      alert(
+        `Please acknowledge the task first by clicking the ✋ icon next to your name, on the left side of the task details`
+      );
+      return;
     } else {
-      console.log("data", data);
+      console.log("id", id);
 
-      // Update rowData with the modified data
-      const updatedRowData = rowData.map((row) => {
-        if (row.id === id) {
-          return { ...row, completed: !completed };
-        }
-        return row;
-      });
+      console.log("completed", completed);
 
-      setRowData(updatedRowData);
+      const { data, error } = await supabase
+        .from("todos_for_todo_demo")
+        .update({ completed: !completed })
+        .eq("id", id);
+      if (error) {
+        console.log("error", error);
+      } else {
+        console.log("data", data);
+
+        // Update rowData with the modified data
+        const updatedRowData = rowData.map((row) => {
+          if (row.id === id) {
+            return { ...row, completed: !completed };
+          }
+          return row;
+        });
+
+        setRowData(updatedRowData);
+      }
     }
   };
 
   const fullWidthCellRenderer = ({ node }: any) => {
-    const { title, id, due_date, description, completed, assigned_to } =
-      node.data;
+    const {
+      title,
+      id,
+      due_date,
+      description,
+      completed,
+      assigned_to,
+      acknowledged,
+    } = node.data;
     return (
       <div
         key={id}
@@ -237,40 +286,47 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
             </h2>
           </div>
         </Link>
-        <div className="flex space-x-2 text-gray-800">
+        <div className="flex items-center space-x-2 text-gray-800">
+          <div>|</div>
+          <div
+            onClick={(e) => handleAcknowledged(e, id)}
+            className="flex items-center space-x-1 text-sm cursor-pointer"
+          >
+            {/* <span className="font-bold">Assigned To: </span> */}
+            {acknowledged ? <AiOutlineCheckCircle /> : <FaHandPaper />}
+            <span className="font-bold">{assigned_to}</span>
+          </div>
           <div>|</div>
           <div className="text-sm">
             <span className="font-bold">Due: </span>
             {formatDate(due_date)}
           </div>
+
           <div>|</div>
           <div className="text-sm">
-            {/* <span className="font-bold">Assigned To: </span> */}
-            <span className="font-bold">{assigned_to}</span>
-          </div>
-          <div>|</div>
-          <div className="text-sm">
-            <span className="font-bold">
+            {/* <span className="font-bold">
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to complete"
               >
                 Completed:
               </button>{" "}
-            </span>
+            </span> */}
             {completed ? (
               <button
-                onClick={(e) => handleComplete(e, id, completed)}
+                onClick={(e) => handleComplete(e, id, completed, acknowledged)}
                 title="click to set un-complete"
+                className="px-2 font-bold bg-gray-200 border border-gray-500 rounded hover:text-gray-500"
               >
-                Yes
+                Complete
               </button>
             ) : (
               <button
-                onClick={(e) => handleComplete(e, id, completed)}
-                title="click to complete"
+                onClick={(e) => handleComplete(e, id, completed, acknowledged)}
+                title="click to set todo as complete"
+                className="px-2 font-bold bg-gray-200 border border-gray-500 rounded disabled:text-gray-300 hover:text-gray-500"
               >
-                No
+                Todo
               </button>
             )}
           </div>
@@ -293,10 +349,12 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
     }
 
     if (daysDiff < 0) {
+      return "red";
+    } else if (daysDiff <= 2) {
       return "deeppink";
-    } else if (daysDiff <= 7) {
+    } else if (daysDiff <= 5) {
       return "orange";
-    } else if (daysDiff <= 14) {
+    } else if (daysDiff <= 10) {
       return "yellow";
     } else {
       return "lightgreen";

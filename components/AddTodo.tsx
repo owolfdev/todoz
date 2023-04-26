@@ -11,6 +11,7 @@ interface Todo {
   id: string;
   images: string[];
   title: string;
+  assigned_to: string;
 }
 
 const AddTodo: React.FC = () => {
@@ -18,6 +19,7 @@ const AddTodo: React.FC = () => {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [assignedTo, setAssignedTo] = useState("");
   //const [session] = useSession();
   const router = useRouter();
 
@@ -58,6 +60,7 @@ const AddTodo: React.FC = () => {
         description,
         due_date: dueDate,
         images,
+        assigned_to: assignedTo,
       });
       console.log("Todo created", data);
       setTitle("");
@@ -83,6 +86,19 @@ const AddTodo: React.FC = () => {
             name="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            className="w-full p-2 text-gray-900 border-2 border-gray-400 rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="title" className="block mb-2 font-bold">
+            Assigned To
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={assignedTo}
+            onChange={(e) => setAssignedTo(e.target.value)}
             className="w-full p-2 text-gray-900 border-2 border-gray-400 rounded"
           />
         </div>

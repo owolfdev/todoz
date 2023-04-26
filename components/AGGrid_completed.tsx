@@ -18,6 +18,8 @@ import supabase from "../lib/supabaseClient";
 import axios from "axios";
 import { log } from "console";
 import { formatDate } from "../lib/dateUtils";
+import { FaRegHandPointRight } from "react-icons/fa";
+import { AiOutlineCheckCircle } from "react-icons/ai";
 
 type data = {
   completed: boolean;
@@ -28,6 +30,7 @@ type data = {
   images: string[];
   title: string;
   assigned_to: string;
+  acknowledged: boolean;
 };
 
 interface AGGridProps {
@@ -45,18 +48,52 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [descriptionLength, setDescriptionLength] = useState(0);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const { data } = await axios.get("/api/todosCompleted");
-        setRowData(data);
-        console.log("Data:", data);
-      } catch (error) {
-        console.error(error);
-      }
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     try {
+  //       const { data } = await axios.get("/api/todosCompleted");
+  //       setRowData(data);
+  //       console.log("Data:", data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchData();
+  // }, []);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const { data } = await axios.get("/api/todosCompleted");
+      setRowData(data);
+      console.log("Data:", data);
+    } catch (error) {
+      console.error(error);
     }
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    console.log("subscribing to realtime changes");
+    //const [todos, setTodos] = useState<data[]>(rowData);
+    const channel = supabase
+      .channel("realtime todos")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "todos_for_todo_demo" },
+        (payload: any) => {
+          console.log("Change received!", payload);
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   useEffect(() => {
     checkIsMobile(); // Call the function initially to set the correct value for isMobile
@@ -184,8 +221,15 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   };
 
   const fullWidthCellRenderer = ({ node }: any) => {
-    const { title, id, due_date, description, completed, assigned_to } =
-      node.data;
+    const {
+      title,
+      id,
+      due_date,
+      description,
+      completed,
+      assigned_to,
+      acknowledged,
+    } = node.data;
     return (
       <div
         key={id}
@@ -201,38 +245,42 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
         </Link>
         <div className="flex space-x-2 text-gray-800">
           <div>|</div>
-          <div className="text-sm">
-            <span className="font-bold">Due: </span>
-            {formatDate(due_date)}
-          </div>
-          <div>|</div>
-          <div className="text-sm">
+          <div className="flex items-center space-x-1 text-sm cursor-pointer">
             {/* <span className="font-bold">Assigned To: </span> */}
+            {acknowledged ? <AiOutlineCheckCircle /> : <FaRegHandPointRight />}
             <span className="font-bold">{assigned_to}</span>
           </div>
           <div>|</div>
           <div className="text-sm">
-            <span className="font-bold">
+            <span className="font-bold">Due: </span>
+            {formatDate(due_date)}
+          </div>
+
+          <div>|</div>
+          <div className="text-sm">
+            {/* <span className="font-bold">
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to complete"
               >
                 Completed:
               </button>{" "}
-            </span>
+            </span> */}
             {completed ? (
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to set un-complete"
+                className="px-2 font-bold bg-gray-200 border border-gray-500 rounded hover:text-gray-500"
               >
-                Yes
+                Complete
               </button>
             ) : (
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to complete"
+                className="px-2 font-bold bg-gray-200 border border-gray-500 rounded hover:text-gray-500"
               >
-                No
+                Todo
               </button>
             )}
           </div>

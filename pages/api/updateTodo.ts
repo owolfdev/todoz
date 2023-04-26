@@ -7,7 +7,17 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "PUT") {
-    const { id, title, completed, images, description } = req.body;
+    const {
+      id,
+      title,
+      due_date,
+      completed,
+      images,
+      description,
+      assigned_to,
+      notes,
+      acknowledged, // Add this line
+    } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: "ID is required" });
@@ -15,7 +25,16 @@ export default async function handler(
 
     const { data, error } = await supabase
       .from("todos_for_todo_demo")
-      .update({ title, completed, images, description })
+      .update({
+        title,
+        completed,
+        due_date,
+        images,
+        description,
+        assigned_to,
+        notes,
+        acknowledged, // Add this line
+      })
       .eq("id", id);
 
     if (error) {

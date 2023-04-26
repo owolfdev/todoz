@@ -7,7 +7,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const { title, description, due_date, images } = req.body;
+    const { title, description, due_date, images, assigned_to } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
@@ -15,7 +15,7 @@ export default async function handler(
 
     const { data, error } = await supabase
       .from("todos_for_todo_demo")
-      .insert([{ title, description, due_date, images }]);
+      .insert([{ title, description, due_date, images, assigned_to }]);
 
     if (error) {
       res.status(400).json({ error });
