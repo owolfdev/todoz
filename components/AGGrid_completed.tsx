@@ -84,7 +84,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "todos_for_todo_demo" },
         (payload: any) => {
-          console.log("Change received!", payload);
+          //console.log("Change received!", payload);
           fetchData();
         }
       )

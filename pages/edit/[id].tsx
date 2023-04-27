@@ -2,6 +2,7 @@ import { log } from "console";
 import { useRouter } from "next/router";
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import Modal from "@/components/ModalDelete";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 
 type Todo = {
   id: string;
@@ -27,6 +28,9 @@ const EditTodoPage: React.FC = () => {
     label: "",
     modalFunction: () => {},
   });
+  const session = useSession();
+  const token = session?.access_token;
+  const supabase = useSupabaseClient();
 
   useEffect(() => {
     async function fetchTodo() {
@@ -81,18 +85,21 @@ const EditTodoPage: React.FC = () => {
   };
 
   const deleteTodo = async () => {
-    if (id) {
-      console.log("DELETING!!!");
-
-      // alert("Are you sure you want to delete this todo?");
-      await fetch(`/api/deleteTodo?id=${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      router.push("/");
+    if (!id) {
+      return;
     }
+
+    const { data, error: deleteError } = await supabase
+      .from("todos_for_todo_demo")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) {
+      console.error(deleteError);
+      return;
+    }
+
+    router.push("/");
   };
 
   return (

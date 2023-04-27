@@ -38,6 +38,13 @@ interface AGGridProps {
   path: string;
 }
 
+const authorizedUserNicknames: { [key: string]: string } = {
+  "oliverwolfson@gmail.com": "Oliver",
+  "owolfdev@gmail.com": "Oliver",
+  "air.puthita@gmail.com": "Air",
+  "silomsoi8.air@gmail.com": "Air",
+};
+
 const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   const [agGridTheme, setAgGridTheme] = useState("ag-theme-alpine");
   const [rowData, setRowData] = useState<data[]>([]);
@@ -50,12 +57,12 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   const [descriptionLength, setDescriptionLength] = useState(0);
 
   const fetchData = useCallback(async () => {
-    console.log("fetching data!!!!");
+    //console.log("fetching data!!!!");
 
     try {
       const { data } = await axios.get("/api/todos");
       setRowData(data);
-      console.log("Data:", data);
+      //console.log("Data:", data);
     } catch (error) {
       console.error(error);
     }
@@ -69,7 +76,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   //https://supabase.com/docs/guides/realtime/realtime-with-nextjs
 
   useEffect(() => {
-    console.log("subscribing to realtime changes");
+    //console.log("subscribing to realtime changes");
     //const [todos, setTodos] = useState<data[]>(rowData);
     const channel = supabase
       .channel("realtime todos update completed")
@@ -77,7 +84,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "todos_for_todo_demo" },
         (payload: any) => {
-          console.log("Change received!", payload);
+          //console.log("Change received!", payload);
           fetchData();
         }
       )
@@ -128,14 +135,26 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
     }
   }, []);
 
-  const handleAcknowledged = async (e: any, id: string) => {
-    e.preventDefault();
-    console.log("acknowledged clicked");
-    console.log("id", id);
+  // const handleAcknowledged = async (e: any, id: string) => {
+  //   e.preventDefault();
+  //   //console.log("acknowledged clicked");
+  //   //console.log("id", id);
 
-    // Find the current acknowledged state of the todo item
+  //   // Find the current acknowledged state of the todo item
+
+  //   acknowledgeTodo(id);
+  // };
+
+  const acknowledgeTodo = async (id: string) => {
     const currentTodo = rowData.find((row) => row.id === id);
-    const newAcknowledgedState = !currentTodo?.acknowledged;
+    const newAcknowledgedState = true;
+
+    const userNickname =
+      session?.user?.email && authorizedUserNicknames[session.user.email];
+
+    if (userNickname !== currentTodo?.assigned_to) {
+      return;
+    }
 
     // Make a PUT request to your updateTodo API
     try {
@@ -145,12 +164,12 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
       });
 
       if (response.status === 200) {
-        console.log("Successfully updated acknowledged state");
+        //console.log("Successfully updated acknowledged state");
 
         // Update rowData with the modified data
         const updatedRowData = rowData.map((row) => {
           if (row.id === id) {
-            return { ...row, acknowledged: newAcknowledgedState };
+            return { ...row, acknowledged: true };
           }
           return row;
         });
@@ -229,37 +248,32 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
     acknowledged: boolean
   ) => {
     e.preventDefault();
-    console.log("complete clicked");
+    //console.log("complete clicked");
 
     if (acknowledged === false) {
-      alert(
-        `Please acknowledge the task first by clicking the ✋ icon next to your name, on the left side of the task details`
-      );
-      return;
+      acknowledgeTodo(id);
+    }
+    //console.log("id", id);
+    //console.log("completed", completed);
+
+    const { data, error } = await supabase
+      .from("todos_for_todo_demo")
+      .update({ completed: !completed })
+      .eq("id", id);
+    if (error) {
+      console.log("error", error);
     } else {
-      console.log("id", id);
+      //console.log("data", data);
 
-      console.log("completed", completed);
+      // Update rowData with the modified data
+      const updatedRowData = rowData.map((row) => {
+        if (row.id === id) {
+          return { ...row, completed: !completed };
+        }
+        return row;
+      });
 
-      const { data, error } = await supabase
-        .from("todos_for_todo_demo")
-        .update({ completed: !completed })
-        .eq("id", id);
-      if (error) {
-        console.log("error", error);
-      } else {
-        console.log("data", data);
-
-        // Update rowData with the modified data
-        const updatedRowData = rowData.map((row) => {
-          if (row.id === id) {
-            return { ...row, completed: !completed };
-          }
-          return row;
-        });
-
-        setRowData(updatedRowData);
-      }
+      setRowData(updatedRowData);
     }
   };
 
@@ -278,6 +292,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
         key={id}
         // title={description}
         className="px-5 py-2 text-gray-900 my-full-width-row"
+        onClick={() => acknowledgeTodo(id)}
       >
         <Link href={`/todo/${id}`}>
           <div className="">
@@ -285,26 +300,26 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
               {title}
             </h2>
           </div>
-        </Link>
-        <div className="flex items-center space-x-2 text-gray-800">
-          <div>|</div>
-          <div
-            onClick={(e) => handleAcknowledged(e, id)}
-            className="flex items-center space-x-1 text-sm cursor-pointer"
-          >
-            {/* <span className="font-bold">Assigned To: </span> */}
-            {acknowledged ? <AiOutlineCheckCircle /> : <FaHandPaper />}
-            <span className="font-bold">{assigned_to}</span>
-          </div>
-          <div>|</div>
-          <div className="text-sm">
-            <span className="font-bold">Due: </span>
-            {formatDate(due_date)}
-          </div>
 
-          <div>|</div>
-          <div className="text-sm">
-            {/* <span className="font-bold">
+          <div className="flex items-center space-x-2 text-gray-800">
+            <div>|</div>
+            <div
+              // onClick={(e) => handleAcknowledged(e, id)}
+              className="flex items-center space-x-1 text-sm cursor-pointer"
+            >
+              {/* <span className="font-bold">Assigned To: </span> */}
+              {acknowledged ? <AiOutlineCheckCircle /> : <FaHandPaper />}
+              <span className="font-bold">{assigned_to}</span>
+            </div>
+            <div>|</div>
+            <div className="text-sm">
+              <span className="font-bold">Due: </span>
+              {formatDate(due_date)}
+            </div>
+
+            <div>|</div>
+            <div className="text-sm">
+              {/* <span className="font-bold">
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to complete"
@@ -312,28 +327,33 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
                 Completed:
               </button>{" "}
             </span> */}
-            {completed ? (
-              <button
-                onClick={(e) => handleComplete(e, id, completed, acknowledged)}
-                title="click to set un-complete"
-                className="px-2 font-bold bg-blue-200 border border-gray-500 rounded hover:text-gray-500"
-              >
-                Complete
-              </button>
-            ) : (
-              <button
-                onClick={(e) => handleComplete(e, id, completed, acknowledged)}
-                title="click to set todo as complete"
-                className="px-2 font-bold bg-gray-200 border border-gray-500 rounded disabled:text-gray-300 hover:text-gray-500"
-              >
-                Todo
-              </button>
-            )}
+              {completed ? (
+                <button
+                  onClick={(e) =>
+                    handleComplete(e, id, completed, acknowledged)
+                  }
+                  title="click to set un-complete"
+                  className="px-2 font-bold bg-blue-200 border border-gray-500 rounded hover:text-gray-500"
+                >
+                  Complete
+                </button>
+              ) : (
+                <button
+                  onClick={(e) =>
+                    handleComplete(e, id, completed, acknowledged)
+                  }
+                  title="click to set todo as complete"
+                  className="px-2 font-bold bg-gray-200 border border-gray-500 rounded disabled:text-gray-300 hover:text-gray-500"
+                >
+                  Done
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="w-full mt-4 text-sm whitespace-pre-wrap">
-          {`${description.substring(0, descriptionLength)}...`}
-        </div>
+          <div className="w-full mt-4 text-sm whitespace-pre-wrap">
+            {`${description.substring(0, descriptionLength)}...`}
+          </div>
+        </Link>
       </div>
     );
   };

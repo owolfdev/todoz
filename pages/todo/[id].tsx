@@ -16,6 +16,8 @@ type Todo = {
   author: string;
 };
 
+const adminEmails = ["oliverwolfson@gmail.com", "owolfdev@gmail.com"];
+
 const TodoPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -27,6 +29,21 @@ const TodoPage: React.FC = () => {
   const [approved, setApproved] = useState<boolean | null>(false);
   const [completed, setCompleted] = useState<boolean | null>(false);
   const session = useSession();
+  const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (session) {
+      const { user } = session;
+      if (user) {
+        const { email } = user;
+        if (email) {
+          if (adminEmails.includes(email)) {
+            setUserIsAdmin(true);
+          }
+        }
+      }
+    }
+  }, [session]);
 
   useEffect(() => {
     async function fetchTodo() {
@@ -190,7 +207,7 @@ const TodoPage: React.FC = () => {
                 className="px-2 text-white bg-green-500 rounded hover:bg-green-600"
                 onClick={() => router.push(`/`)}
               >
-                Done
+                Back
               </button>
             </div>
           </div>
@@ -251,6 +268,7 @@ const TodoPage: React.FC = () => {
                 <button
                   onClick={handleApproved}
                   className="px-2 bg-green-200 border border-gray-300 rounded hover:text-gray-600"
+                  disabled={!userIsAdmin}
                 >
                   Yes
                 </button>
@@ -258,9 +276,7 @@ const TodoPage: React.FC = () => {
                 <button
                   onClick={handleApproved}
                   className="px-2 bg-gray-200 border border-gray-300 rounded disabled:text-gray-400 hover:text-gray-600"
-                  disabled={
-                    session ? session?.user?.email !== todo.author : true
-                  }
+                  disabled={!userIsAdmin}
                 >
                   No
                 </button>

@@ -32,7 +32,7 @@ const AddTodo: React.FC = () => {
     if (!session) {
       router.push("/signin");
     } else {
-      console.log("session", session);
+      //console.log("session", session);
     }
   }, [session]);
 
@@ -77,7 +77,7 @@ const AddTodo: React.FC = () => {
         author: session?.user?.email,
         user_id: session?.user?.id,
       });
-      console.log("Todo created", data);
+      //console.log("Todo created", data);
       setTitle("");
       setDescription("");
       setDueDate("");

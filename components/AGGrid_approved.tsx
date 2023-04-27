@@ -65,7 +65,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
     try {
       const { data } = await axios.get("/api/todosApproved");
       setRowData(data);
-      console.log("Data:", data);
+      //console.log("Data:", data);
     } catch (error) {
       console.error(error);
     }
@@ -76,7 +76,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
   }, [fetchData]);
 
   useEffect(() => {
-    console.log("subscribing to realtime changes");
+    //console.log("subscribing to realtime changes");
     //const [todos, setTodos] = useState<data[]>(rowData);
     const channel = supabase
       .channel("realtime todos approved")
@@ -84,7 +84,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "todos_for_todo_demo" },
         (payload: any) => {
-          console.log("Change received!", payload);
+          //console.log("Change received!", payload);
           fetchData();
         }
       )
@@ -193,11 +193,11 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
 
   const handleComplete = async (e: any, id: string, completed: boolean) => {
     e.preventDefault();
-    console.log("complete clicked");
+    //console.log("complete clicked");
 
-    console.log("id", id);
+    //console.log("id", id);
 
-    console.log("completed", completed);
+    //console.log("completed", completed);
 
     const { data, error } = await supabase
       .from("todos_for_todo_demo")
@@ -242,23 +242,27 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
               {title}
             </h2>
           </div>
-        </Link>
-        <div className="flex space-x-2 text-gray-800">
-          <div>|</div>
-          <div className="flex items-center space-x-1 text-sm cursor-pointer">
-            {/* <span className="font-bold">Assigned To: </span> */}
-            {acknowledged ? <AiOutlineCheckCircle /> : <FaRegHandPointRight />}
-            <span className="font-bold">{assigned_to}</span>
-          </div>
-          <div>|</div>
-          <div className="text-sm">
-            <span className="font-bold">Due: </span>
-            {formatDate(due_date)}
-          </div>
 
-          <div>|</div>
-          <div className="text-sm">
-            {/* <span className="font-bold">
+          <div className="flex space-x-2 text-gray-800">
+            <div>|</div>
+            <div className="flex items-center space-x-1 text-sm cursor-pointer">
+              {/* <span className="font-bold">Assigned To: </span> */}
+              {acknowledged ? (
+                <AiOutlineCheckCircle />
+              ) : (
+                <FaRegHandPointRight />
+              )}
+              <span className="font-bold">{assigned_to}</span>
+            </div>
+            <div>|</div>
+            <div className="text-sm">
+              <span className="font-bold">Due: </span>
+              {formatDate(due_date)}
+            </div>
+
+            <div>|</div>
+            <div className="text-sm">
+              {/* <span className="font-bold">
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to complete"
@@ -266,7 +270,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
                 Completed:
               </button>{" "}
             </span> */}
-            {/* {completed ? (
+              {/* {completed ? (
               <button
                 onClick={(e) => handleComplete(e, id, completed)}
                 title="click to set un-complete"
@@ -283,16 +287,17 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
                 Todo
               </button>
             )} */}
-            <div>
-              <span className="px-2 py-1 font-bold bg-green-200 border rounded">
-                Approved
-              </span>
+              <div>
+                <span className="px-2 py-1 font-bold bg-green-200 border rounded">
+                  Approved
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="w-full mt-4 text-sm whitespace-pre-wrap">
-          {`${description.substring(0, descriptionLength)}...`}
-        </div>
+          <div className="w-full mt-4 text-sm whitespace-pre-wrap">
+            {`${description.substring(0, descriptionLength)}...`}
+          </div>
+        </Link>
       </div>
     );
   };

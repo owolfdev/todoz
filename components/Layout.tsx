@@ -25,7 +25,7 @@ const Layout: React.FC<LayoutProps> = ({ title, children }) => {
   useEffect(() => {
     if (session?.user && session.user.email) {
       if (allowedEmails.includes(session.user.email)) {
-        console.log("Authorized email:", session.user.email);
+        //console.log("Authorized email:", session.user.email);
         //router.push("/signin"); // Redirect to /signin after successful login
       } else {
         console.error("Unauthorized email:", session.user.email);

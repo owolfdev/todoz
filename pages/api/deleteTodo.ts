@@ -8,7 +8,7 @@ export default async function handler(
   if (req.method === "DELETE") {
     const { id } = req.query;
 
-    console.log("id from delete todo!!!!!!", id);
+    // console.log("id from delete todo!!!!!!", id);
 
     if (!id) {
       return res.status(400).json({ error: "ID is required" });
@@ -24,6 +24,8 @@ export default async function handler(
     } else {
       res.status(200).json(data && data[0]);
     }
+
+    //
   } else {
     res.status(405).json({ message: "Method not allowed" });
   }
