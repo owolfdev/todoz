@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { useRef } from "react";
 
 let cloudinary;
 let widget;
@@ -62,6 +63,7 @@ const UploadWidget = ({ children, onUpload }) => {
       cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, // Ex: mycloudname
       apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY, // Ex: 1234567890
       uploadSignature: generateSignature,
+      sources: ["local", "camera"],
     };
 
     return cloudinary?.createUploadWidget(options, function (error, result) {

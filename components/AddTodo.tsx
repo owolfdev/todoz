@@ -4,7 +4,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useSession } from "@supabase/auth-helpers-react";
 
-interface Todo {
+export interface Todo {
   completed: boolean;
   created_at: string;
   description: string;

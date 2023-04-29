@@ -1,13 +1,11 @@
 import { useRouter } from "next/router";
 import { useEffect, useState, ChangeEvent } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
-
 import { Cloudinary } from "@cloudinary/url-gen";
-
 import UploadWidget from "../../components/UploadWidget";
-
 import axios from "axios";
 import { v4 as uuid } from "uuid";
+import { log } from "console";
 
 type Todo = {
   id: string;
@@ -158,9 +156,9 @@ const TodoPage: React.FC = () => {
       case "orange":
         return "In Queue";
       case "yellow":
-        return "Coming Up";
+        return "Coming Up Soon";
       case "lightgreen":
-        return "Not Urgent";
+        return "On Track";
       case "lightgray":
         return "Completed";
       default:
@@ -242,53 +240,10 @@ const TodoPage: React.FC = () => {
               images: updatedImages,
             })
             .then((response) => {
-              if (response.data) {
-                setTodo({ ...data, images: updatedImages });
-              }
-              function handleOnUpload(error: any, result: any, widget: any) {
-                if (error) {
-                  updateError(error);
-                  widget.close({
-                    quiet: true,
-                  });
-                  return;
-                }
-
-                // get the public URL of the uploaded image from the result
-                const publicUrl = result.info.secure_url;
-
-                if (typeof id === "string") {
-                  // First, retrieve the current todo from the database
-                  fetch(`/api/todo?id=${id}`)
-                    .then((res) => res.json())
-                    .then((data: Todo) => {
-                      // Next, update the images array of the todo with the new public URL
-                      const updatedImages = data.images
-                        ? [...data.images, publicUrl]
-                        : [publicUrl];
-
-                      // Finally, update the todo in the database with the new images array
-                      axios
-                        .put("/api/updateTodo", {
-                          ...data,
-                          id,
-                          images: updatedImages,
-                        })
-                        .then((response) => {
-                          if (response.data) {
-                            setTodo({ ...data, images: updatedImages });
-                          }
-                        })
-                        .catch((error) => {
-                          console.error(error);
-                        });
-                    })
-                    .catch((error) => {
-                      console.error(error);
-                    });
-                }
-
-                setUploadedImageUrl(publicUrl);
+              console.log("response?????", response);
+              if (response.status === 200) {
+                console.log("response.data!!!!!", response.data);
+                fetchTodo();
               }
             })
             .catch((error) => {
@@ -299,8 +254,6 @@ const TodoPage: React.FC = () => {
           console.error(error);
         });
     }
-
-    setUploadedImageUrl(publicUrl);
   }
 
   return (
@@ -338,12 +291,25 @@ const TodoPage: React.FC = () => {
               <strong>Assigned to:</strong> {todo.assigned_to}
             </div>
             <div>
-              <strong>
-                <span className="text-xl">Due date:</span>
-              </strong>{" "}
-              <span className="text-xl">
-                {new Date(todo.due_date).toLocaleDateString()}
-              </span>
+              <div className="mt-4 mb-4">
+                {" "}
+                <div>
+                  <strong>
+                    <span className="text-xl">Description:</span>
+                  </strong>{" "}
+                  <div className="px-3 py-2 border border-gray-300 rounded-md">
+                    {todo.description}
+                  </div>
+                </div>
+              </div>
+              <div className="mb-4">
+                <strong>
+                  <span className="text-xl">Due date:</span>
+                </strong>{" "}
+                <span className="text-xl">
+                  {new Date(todo.due_date).toLocaleDateString()}
+                </span>
+              </div>
             </div>
             <div>
               <strong>Author:</strong> {todo.author}
@@ -405,15 +371,7 @@ const TodoPage: React.FC = () => {
               )}
             </div>
           </div>
-          <div className="mt-4">
-            {" "}
-            <div>
-              <strong>
-                <span className="text-xl">Description:</span>
-              </strong>{" "}
-              <div>{todo.description}</div>
-            </div>
-          </div>
+
           <div className="flex flex-col mt-4">
             <label htmlFor="notes">
               <strong>Notes:</strong>
