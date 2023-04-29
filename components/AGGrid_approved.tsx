@@ -20,6 +20,7 @@ import { log } from "console";
 import { formatDate } from "../lib/dateUtils";
 import { FaRegHandPointRight } from "react-icons/fa";
 import { AiOutlineCheckCircle } from "react-icons/ai";
+import { FaHandPaper } from "react-icons/fa";
 
 type data = {
   completed: boolean;
@@ -247,11 +248,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
             <div>|</div>
             <div className="flex items-center space-x-1 text-sm cursor-pointer">
               {/* <span className="font-bold">Assigned To: </span> */}
-              {acknowledged ? (
-                <AiOutlineCheckCircle />
-              ) : (
-                <FaRegHandPointRight />
-              )}
+              <AiOutlineCheckCircle />
               <span className="font-bold">{assigned_to}</span>
             </div>
             <div>|</div>

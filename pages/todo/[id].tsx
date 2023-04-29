@@ -2,6 +2,13 @@ import { useRouter } from "next/router";
 import { useEffect, useState, ChangeEvent } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 
+import { Cloudinary } from "@cloudinary/url-gen";
+
+import UploadWidget from "../../components/UploadWidget";
+
+import axios from "axios";
+import { v4 as uuid } from "uuid";
+
 type Todo = {
   id: string;
   created_at: string;
@@ -18,6 +25,14 @@ type Todo = {
 
 const adminEmails = ["oliverwolfson@gmail.com", "owolfdev@gmail.com"];
 
+const url = "/api/cloudinary-upload";
+const options = {
+  method: "POST",
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+};
+
 const TodoPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -30,6 +45,19 @@ const TodoPage: React.FC = () => {
   const [completed, setCompleted] = useState<boolean | null>(false);
   const session = useSession();
   const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false);
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
+
+  const [url, updateUrl] = useState();
+  const [error, updateError] = useState();
+
+  // Create a Cloudinary instance and set your cloud name.
+  const cld = new Cloudinary({
+    cloud: {
+      cloudName: "demo",
+    },
+  });
 
   useEffect(() => {
     if (session) {
@@ -45,21 +73,24 @@ const TodoPage: React.FC = () => {
     }
   }, [session]);
 
-  useEffect(() => {
-    async function fetchTodo() {
-      if (typeof id === "string") {
-        const res = await fetch(`/api/todo?id=${id}`);
-        const data: Todo = await res.json();
-        setTodo(data);
-      }
+  async function fetchTodo() {
+    if (typeof id === "string") {
+      const res = await fetch(`/api/todo?id=${id}`);
+      const data: Todo = await res.json();
+      console.log("fetchTodo data:", data);
+      setTodo(data);
     }
+  }
 
+  useEffect(() => {
     if (id) {
       fetchTodo();
     }
   }, [id]);
 
   useEffect(() => {
+    console.log("update todo, from useEffect", todo);
+
     if (todo) {
       setApproved(todo.approved);
       setCompleted(todo.completed);
@@ -181,6 +212,97 @@ const TodoPage: React.FC = () => {
     }
   };
 
+  function handleOnUpload(error: any, result: any, widget: any) {
+    if (error) {
+      updateError(error);
+      widget.close({
+        quiet: true,
+      });
+      return;
+    }
+
+    // get the public URL of the uploaded image from the result
+    const publicUrl = result.info.secure_url;
+
+    if (typeof id === "string") {
+      // First, retrieve the current todo from the database
+      fetch(`/api/todo?id=${id}`)
+        .then((res) => res.json())
+        .then((data: Todo) => {
+          // Next, update the images array of the todo with the new public URL
+          const updatedImages = data.images
+            ? [...data.images, publicUrl]
+            : [publicUrl];
+
+          // Finally, update the todo in the database with the new images array
+          axios
+            .put("/api/updateTodo", {
+              ...data,
+              id,
+              images: updatedImages,
+            })
+            .then((response) => {
+              if (response.data) {
+                setTodo({ ...data, images: updatedImages });
+              }
+              function handleOnUpload(error: any, result: any, widget: any) {
+                if (error) {
+                  updateError(error);
+                  widget.close({
+                    quiet: true,
+                  });
+                  return;
+                }
+
+                // get the public URL of the uploaded image from the result
+                const publicUrl = result.info.secure_url;
+
+                if (typeof id === "string") {
+                  // First, retrieve the current todo from the database
+                  fetch(`/api/todo?id=${id}`)
+                    .then((res) => res.json())
+                    .then((data: Todo) => {
+                      // Next, update the images array of the todo with the new public URL
+                      const updatedImages = data.images
+                        ? [...data.images, publicUrl]
+                        : [publicUrl];
+
+                      // Finally, update the todo in the database with the new images array
+                      axios
+                        .put("/api/updateTodo", {
+                          ...data,
+                          id,
+                          images: updatedImages,
+                        })
+                        .then((response) => {
+                          if (response.data) {
+                            setTodo({ ...data, images: updatedImages });
+                          }
+                        })
+                        .catch((error) => {
+                          console.error(error);
+                        });
+                    })
+                    .catch((error) => {
+                      console.error(error);
+                    });
+                }
+
+                setUploadedImageUrl(publicUrl);
+              }
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
+    setUploadedImageUrl(publicUrl);
+  }
+
   return (
     <div>
       {todo && (
@@ -283,7 +405,6 @@ const TodoPage: React.FC = () => {
               )}
             </div>
           </div>
-
           <div className="mt-4">
             {" "}
             <div>
@@ -310,11 +431,26 @@ const TodoPage: React.FC = () => {
               placeholder="Provide links, feedback, or additonal information here..."
             ></textarea>
           </div>
-          <div>
-            <button className="px-2 mt-4 bg-gray-200 border border-gray-300 rounded hover:text-gray-600">
-              Add Image
-            </button>
+          {/* upload images */}
+          <div className="mt-4">
+            <UploadWidget onUpload={handleOnUpload}>
+              {({ open }: any) => {
+                function handleOnClick(e: any) {
+                  e.preventDefault();
+                  open();
+                }
+                return (
+                  <button
+                    className="px-2 bg-gray-200 border border-gray-300 rounded hover:text-gray-600"
+                    onClick={handleOnClick}
+                  >
+                    Upload an Image
+                  </button>
+                );
+              }}
+            </UploadWidget>
           </div>
+
           {todo.images.length > 0 && (
             <div className="mt-12">
               <ul>
