@@ -12,7 +12,7 @@ export default function App({ Component, pageProps }: AppProps) {
       supabaseClient={supabaseClient}
       initialSession={pageProps.initialSession}
     >
-      <Layout title="Todos">
+      <Layout title="Todoz">
         <Component {...pageProps} />
       </Layout>
     </SessionContextProvider>

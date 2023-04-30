@@ -57,7 +57,25 @@ const TodoPage: React.FC = () => {
     },
   });
 
+  // useEffect(() => {
+  //   // if (!session) {
+  //   //   router.push("/signin");
+  //   // }
+
+  //   if (session?.user && session.user.email) {
+  //     if (allowedEmails.includes(session.user.email)) {
+  //     } else {
+  //       console.error("Unauthorized email:", session.user.email);
+  //       signOut();
+  //     }
+  //   }
+  // }, [session]);
+
   useEffect(() => {
+    // if (!session) {
+    //   router.push("/signin");
+    // }
+
     if (session) {
       const { user } = session;
       if (user) {
