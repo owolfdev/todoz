@@ -16,6 +16,7 @@ const DocsPage = () => {
             <Link className="hover:underline" href="/">
               <li>View tasks.</li>
             </Link>
+            <li>Open a task by clicking on it.</li>
             <li>Add notes, links, and images to document your work.</li>
             <li>Click 'Done' when task is completed.</li>
           </ol>
