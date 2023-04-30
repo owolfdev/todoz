@@ -1,6 +1,8 @@
 import { WebClient } from "@slack/web-api";
 
-const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
+const slackClient = new WebClient(
+  "xoxb-518851412742-5202745215281-ySQlvH6u4n8pQHXDUxUT8lNL"
+);
 
 export async function sendSlackMessage(channel: string, text: string) {
   try {
