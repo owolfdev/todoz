@@ -106,7 +106,7 @@ const TodoPage: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    console.log("update todo, from useEffect", todo);
+    //console.log("update todo, from useEffect", todo);
 
     if (todo) {
       setApproved(todo.approved);
@@ -454,14 +454,17 @@ const TodoPage: React.FC = () => {
           {todo.images.map((image, index) => (
             <li key={index} className="relative list-none">
               <img src={image} alt={`Image ${index + 1}`} />
-              <button
-                className="absolute p-1 text-white bg-red-500 rounded-xl top-2 right-2"
-                onClick={() => handleDeleteImage(image)}
-              >
-                <ImCancelCircle />
-              </button>
+              {session?.user?.email === todo.author && (
+                <button
+                  className="absolute p-1 text-white bg-red-500 rounded-xl top-2 right-2"
+                  onClick={() => handleDeleteImage(image)}
+                >
+                  <ImCancelCircle />
+                </button>
+              )}
             </li>
           ))}
+
           {/*  */}
         </div>
       )}
