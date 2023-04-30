@@ -297,7 +297,10 @@ const TodoPage: React.FC = () => {
                   <strong>
                     <span className="text-2xl">Task:</span>
                   </strong>{" "}
-                  <div className="px-3 py-2 border border-gray-300 rounded-md">
+                  <div
+                    className="px-4 py-3 border border-gray-300 rounded-md"
+                    style={{ whiteSpace: "pre-wrap" }}
+                  >
                     {todo.description}
                   </div>
                 </div>
@@ -385,7 +388,7 @@ const TodoPage: React.FC = () => {
               }
               onChange={updateNotes}
               style={{ resize: "none" }}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-4 py-3 border border-gray-300 rounded-md"
               placeholder="Provide links, feedback, or additonal information here..."
             ></textarea>
           </div>
