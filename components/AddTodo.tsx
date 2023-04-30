@@ -67,6 +67,14 @@ const AddTodo: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!title) {
+      alert("Please enter a title.");
+      return;
+    }
+    if (!dueDate) {
+      alert("Please enter a due date.");
+      return;
+    }
     try {
       const { data } = await axios.post("/api/createTodo", {
         title,
@@ -126,7 +134,7 @@ const AddTodo: React.FC = () => {
             name="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 text-gray-900 border-2 border-gray-400 rounded "
+            className="h-[200px] w-full p-2 text-gray-900 border-2 border-gray-400 rounded "
           />
         </div>
         <div className="mb-4">
@@ -139,7 +147,7 @@ const AddTodo: React.FC = () => {
             name="due_date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full p-2 text-gray-900 border-2 border-gray-400 rounded "
+            className="w-full p-2 text-gray-900 border-2 border-gray-400 rounded"
           />
         </div>
         <div className="flex space-x-4">
