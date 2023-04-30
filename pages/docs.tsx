@@ -1,11 +1,25 @@
 import React from "react";
 import AddTodo from "../components/AddTodo";
+import Link from "next/link";
 
 const DocsPage = () => {
   return (
     <div>
       <h2 className="mb-4 text-3xl font-bold">How to use Todos App</h2>
       <div>
+        <h3 className="mb-4 text-2xl font-bold">Quick Start:</h3>
+        <div className="px-4 mb-4">
+          <ol className="list-decimal">
+            <Link className="hover:underline" href="/signin">
+              <li>Sign in.</li>
+            </Link>
+            <Link className="hover:underline" href="/">
+              <li>View tasks.</li>
+            </Link>
+            <li>Add notes, links, and images to document your work.</li>
+            <li>Click 'Done' when task is completed.</li>
+          </ol>
+        </div>
         <div className="flex flex-col space-y-2">
           <h3 className="text-2xl font-bold">Introduction:</h3>
           <p>
