@@ -104,14 +104,15 @@ const EditTodoPage: React.FC = () => {
 
   return (
     <div>
+      <h2 className="mb-4 text-2xl font-bold">Edit Todo</h2>
       {todo && (
         <form
           onSubmit={handleSubmit}
-          style={{
-            border: "2px solid #ccc",
-            padding: "1rem",
-            borderRadius: "10px",
-          }}
+          // style={{
+          //   border: "2px solid #ccc",
+          //   padding: "1rem",
+          //   borderRadius: "10px",
+          // }}
         >
           <h2 className="text-3xl font-bold">
             <input
@@ -159,7 +160,7 @@ const EditTodoPage: React.FC = () => {
           <textarea
             value={todo.description}
             onChange={(e) => handleChange(e, "description")}
-            className="w-full p-2 text-gray-900 border-2 border-gray-400 rounded"
+            className="h-[200px] w-full p-2 text-gray-900 border-2 border-gray-400 rounded"
           />
 
           {/* Submit and Cancel buttons */}
