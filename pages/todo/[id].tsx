@@ -6,6 +6,7 @@ import UploadWidget from "../../components/UploadWidget";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { log } from "console";
+import { ImCancelCircle } from "react-icons/im";
 
 type Todo = {
   id: string;
@@ -274,6 +275,26 @@ const TodoPage: React.FC = () => {
     }
   }
 
+  const handleDeleteImage = async (image: string) => {
+    if (todo && typeof id === "string") {
+      // Remove the image from the images array
+      const updatedImages = todo.images.filter((img) => img !== image);
+
+      // Update the todo in the database with the new images array
+      const response = await fetch("/api/updateTodo", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...todo, id, images: updatedImages }),
+      });
+
+      if (response.ok) {
+        setTodo({ ...todo, images: updatedImages });
+      }
+    }
+  };
+
   return (
     <div>
       {todo && (
@@ -429,18 +450,19 @@ const TodoPage: React.FC = () => {
               }}
             </UploadWidget>
           </div>
-
-          {todo.images.length > 0 && (
-            <div className="mt-12">
-              <ul>
-                {todo.images.map((image, index) => (
-                  <li key={index}>
-                    <img src={image} alt={`Image ${index + 1}`} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/*  */}
+          {todo.images.map((image, index) => (
+            <li key={index} className="relative list-none">
+              <img src={image} alt={`Image ${index + 1}`} />
+              <button
+                className="absolute p-1 text-white bg-red-500 rounded-xl top-2 right-2"
+                onClick={() => handleDeleteImage(image)}
+              >
+                <ImCancelCircle />
+              </button>
+            </li>
+          ))}
+          {/*  */}
         </div>
       )}
     </div>

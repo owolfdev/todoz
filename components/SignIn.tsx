@@ -60,9 +60,13 @@ const SignIn = () => {
   return (
     <div className="flex flex-col">
       <>
-        <h1 className="mb-4 text-2xl font-bold">
+        <h2 className="mb-4 text-2xl font-bold">
           {!session ? `Sign In` : `Sign Out, or Sign In as Another User`}
-        </h1>
+        </h2>
+        <p className="mb-4">
+          This is a private todo list. Please sign in with your Google account
+          to continue.
+        </p>
         <div className="mb-4">
           {session && (
             <div>
