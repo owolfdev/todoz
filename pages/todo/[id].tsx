@@ -267,7 +267,7 @@ const TodoPage: React.FC = () => {
           }}
         >
           <div className="mb-4">
-            <h2 className="text-3xl font-bold">{todo.title}</h2>
+            <h1 className="mb-1 text-4xl font-bold">{todo.title}</h1>
             <div className="flex space-x-2">
               {session?.user?.email === todo.author && (
                 <button
@@ -295,7 +295,7 @@ const TodoPage: React.FC = () => {
                 {" "}
                 <div>
                   <strong>
-                    <span className="text-xl">Description:</span>
+                    <span className="text-2xl">Task:</span>
                   </strong>{" "}
                   <div className="px-3 py-2 border border-gray-300 rounded-md">
                     {todo.description}

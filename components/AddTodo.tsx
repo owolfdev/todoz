@@ -93,7 +93,7 @@ const AddTodo: React.FC = () => {
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="title" className="block mb-2 font-bold">
-            Title
+            Title:
           </label>
           <input
             type="text"
@@ -106,7 +106,7 @@ const AddTodo: React.FC = () => {
         </div>
         <div className="mb-4">
           <label htmlFor="title" className="block mb-2 font-bold">
-            Assigned To
+            Assigned To:
           </label>
           <input
             type="text"
@@ -119,7 +119,7 @@ const AddTodo: React.FC = () => {
         </div>
         <div className="mb-4">
           <label htmlFor="description" className="block mb-2 font-bold">
-            Description
+            Task:
           </label>
           <textarea
             id="description"
@@ -131,7 +131,7 @@ const AddTodo: React.FC = () => {
         </div>
         <div className="mb-4">
           <label htmlFor="due_date" className="block mb-2 font-bold">
-            Due Date
+            Due Date:
           </label>
           <input
             type="date"
