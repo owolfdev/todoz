@@ -537,26 +537,28 @@ const TodoPage: React.FC = () => {
                 );
               }}
             </UploadWidget> */}
-            <div className="mb-4">
-              <form onSubmit={handleSubmit}>
-                <label htmlFor="file-input">Upload a photo: </label>
-                <input
-                  id="file-input"
-                  type="file"
-                  onChange={handleFileChange}
-                />
+            {session?.user?.email === todo.author && (
+              <div className="mb-4">
+                <form onSubmit={handleSubmit}>
+                  <label htmlFor="file-input">Upload a photo: </label>
+                  <input
+                    id="file-input"
+                    type="file"
+                    onChange={handleFileChange}
+                  />
 
-                {image && (
-                  <button
-                    className="px-2 bg-green-200 border border-gray-300 rounded disabled:text-gray-300 hover:text-gray-600"
-                    type="submit"
-                    disabled={loading}
-                  >
-                    {loading ? `Loading...` : `Upload The Image`}
-                  </button>
-                )}
-              </form>
-            </div>
+                  {image && (
+                    <button
+                      className="px-2 bg-green-200 border border-gray-300 rounded disabled:text-gray-300 hover:text-gray-600"
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading ? `Loading...` : `Upload The Image`}
+                    </button>
+                  )}
+                </form>
+              </div>
+            )}
           </div>
           {/*  */}
           {todo.images.map((image, index) => (
