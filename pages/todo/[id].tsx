@@ -1,12 +1,19 @@
 import { useRouter } from "next/router";
-import { useEffect, useState, ChangeEvent } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+//import { useSession } from "@supabase/auth-helpers-react";
 import { Cloudinary } from "@cloudinary/url-gen";
 import UploadWidget from "../../components/UploadWidget";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { log } from "console";
 import { ImCancelCircle } from "react-icons/im";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+
+// import Script from "next/script";
+// import { useRef } from "react";
+
+// let cloudinary;
+// let widget;
 
 type Todo = {
   id: string;
@@ -51,6 +58,15 @@ const TodoPage: React.FC = () => {
   const [url, updateUrl] = useState();
   const [error, updateError] = useState();
 
+  const [latestId, setLatestId] = useState<string | null>(null);
+
+  const supabase = useSupabaseClient();
+
+  const storage = supabase.storage.from("test");
+
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
   // Create a Cloudinary instance and set your cloud name.
   const cld = new Cloudinary({
     cloud: {
@@ -58,25 +74,13 @@ const TodoPage: React.FC = () => {
     },
   });
 
-  // useEffect(() => {
-  //   // if (!session) {
-  //   //   router.push("/signin");
-  //   // }
-
-  //   if (session?.user && session.user.email) {
-  //     if (allowedEmails.includes(session.user.email)) {
-  //     } else {
-  //       console.error("Unauthorized email:", session.user.email);
-  //       signOut();
-  //     }
-  //   }
-  // }, [session]);
+  useEffect(() => {
+    if (todo) {
+      setLatestId(todo.id);
+    }
+  }, [todo]);
 
   useEffect(() => {
-    // if (!session) {
-    //   router.push("/signin");
-    // }
-
     if (session) {
       const { user } = session;
       if (user) {
@@ -229,7 +233,14 @@ const TodoPage: React.FC = () => {
     }
   };
 
-  function handleOnUpload(error: any, result: any, widget: any) {
+  function handleOnUpload(
+    error: any,
+    result: any,
+    widget: any,
+    todoId: string
+  ) {
+    console.log("handleOnUpload!!!!!");
+
     if (error) {
       updateError(error);
       widget.close({
@@ -241,7 +252,9 @@ const TodoPage: React.FC = () => {
     // get the public URL of the uploaded image from the result
     const publicUrl = result.info.secure_url;
 
-    if (typeof id === "string") {
+    console.log("id from todo!!:", id);
+
+    if (typeof todoId === "string") {
       // First, retrieve the current todo from the database
       fetch(`/api/todo?id=${id}`)
         .then((res) => res.json())
@@ -291,6 +304,81 @@ const TodoPage: React.FC = () => {
 
       if (response.ok) {
         setTodo({ ...todo, images: updatedImages });
+      }
+    }
+  };
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      console.log("file changed!!!!", file.name);
+
+      setLoading(true);
+
+      const { data, error } = await storage.upload(`${file.name}.jpg`, file);
+
+      console.log("data!!!!", data);
+      console.log("error!!!!", error);
+
+      const publicUrl = supabase.storage
+        .from("test")
+        .getPublicUrl(`${file.name}.jpg`);
+
+      setLoading(false);
+
+      //const publicUrl = storage.from("test").getPublicUrl(`${file.name}.jpg`);
+
+      console.log("Public URL:", publicUrl);
+
+      setImage(publicUrl.data.publicUrl);
+
+      //images_for_todo_app
+      // axios
+      //   .post("/api/cloudinary-upload", formData, options)
+      //   .then((response) => {
+      //     const publicUrl = response.data.secure_url;
+      //     setUploadedImageUrl(publicUrl);
+      //     setUploadingImage(false);
+      //   });
+    }
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    console.log("handleSubmit!!!!");
+
+    event.preventDefault();
+    if (image) {
+      if (typeof id === "string") {
+        fetch(`/api/todo?id=${id}`)
+          .then((res) => res.json())
+          .then((data: Todo) => {
+            const updatedImages = data.images
+              ? [...data.images, image]
+              : [image];
+            axios
+              .put("/api/updateTodo", {
+                ...data,
+                id,
+                images: updatedImages,
+              })
+              .then((response) => {
+                if (response.status === 200) {
+                  fetchTodo();
+                  setImage(null);
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       }
     }
   };
@@ -433,7 +521,7 @@ const TodoPage: React.FC = () => {
           </div>
           {/* upload images */}
           <div className="mt-4">
-            <UploadWidget onUpload={handleOnUpload}>
+            {/* <UploadWidget onUpload={handleOnUpload} todoId={latestId}>
               {({ open }: any) => {
                 function handleOnClick(e: any) {
                   e.preventDefault();
@@ -448,7 +536,27 @@ const TodoPage: React.FC = () => {
                   </button>
                 );
               }}
-            </UploadWidget>
+            </UploadWidget> */}
+            <div className="mb-4">
+              <form onSubmit={handleSubmit}>
+                <label htmlFor="file-input">Upload a photo: </label>
+                <input
+                  id="file-input"
+                  type="file"
+                  onChange={handleFileChange}
+                />
+
+                {image && (
+                  <button
+                    className="px-2 bg-green-200 border border-gray-300 rounded disabled:text-gray-300 hover:text-gray-600"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? `Loading...` : `Upload The Image`}
+                  </button>
+                )}
+              </form>
+            </div>
           </div>
           {/*  */}
           {todo.images.map((image, index) => (

@@ -4,7 +4,7 @@ import { useRef } from "react";
 let cloudinary;
 let widget;
 
-const UploadWidget = ({ children, onUpload }) => {
+const UploadWidget = ({ children, onUpload, todoId }) => {
   /**
    * handleOnLoad
    * @description Stores the Cloudinary window instance to a ref when the widget script loads
@@ -72,7 +72,7 @@ const UploadWidget = ({ children, onUpload }) => {
       // create a separate handler such as onEvent and trigger it on
       // ever occurance
       if (error || result.event === "success") {
-        onUpload(error, result, widget);
+        onUpload(error, result, widget, todoId);
       }
     });
   }
