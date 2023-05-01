@@ -108,9 +108,9 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
 
   useEffect(() => {
     if (isMobile) {
-      setDescriptionLength(80);
+      setDescriptionLength(50);
     } else {
-      setDescriptionLength(200);
+      setDescriptionLength(100);
     }
   }, [isMobile]);
 
@@ -291,7 +291,7 @@ const FullWidthGrid: React.FC<AGGridProps> = ({ path }) => {
               </div>
             </div>
           </div>
-          <div className="w-full mt-4 text-sm whitespace-pre-wrap">
+          <div className="w-full mt-4 overflow-hidden text-sm whitespace-nowrap">
             {`${description.substring(0, descriptionLength)}...`}
           </div>
         </Link>
